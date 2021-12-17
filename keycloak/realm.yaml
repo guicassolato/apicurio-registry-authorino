@@ -1,0 +1,52 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: apicurio-registry
+spec:
+  instanceSelector:
+    matchLabels:
+      app: keycloak
+  realm:
+    realm: apicurio-registry
+    displayName: "Apicurio Registry"
+    enabled: true
+    sslRequired: none
+    roles:
+      realm:
+        - name: sr-admin
+        - name: sr-developer
+        - name: sr-readonly
+    clients:
+      - clientId: envoy
+        publicClient: false
+        secret: 77e84241-32a7-4c70-a4c0-0ec6ad9b7f7d
+        standardFlowEnabled: true
+        redirectUris:
+          - 'https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/callback*'
+        webOrigins:
+          - '*'
+    users:
+      - username: registry-admin
+        credentials:
+          - temporary: false
+            type: password
+            value: changeme
+        enabled: true
+        realmRoles:
+          - sr-admin
+      - username: registry-developer
+        credentials:
+          - temporary: false
+            type: password
+            value: changeme
+        enabled: true
+        realmRoles:
+          - sr-developer
+      - username: registry-user
+        credentials:
+          - temporary: false
+            type: password
+            value: changeme
+        enabled: true
+        realmRoles:
+          - sr-readonly

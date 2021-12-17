@@ -1,0 +1,22 @@
+apiVersion: authorino.kuadrant.io/v1beta1
+kind: AuthConfig
+metadata:
+  name: apicurio-registry-api-protection
+spec:
+  hosts:
+  - apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+  identity:
+  - name: keycloak
+    oidc:
+      endpoint: https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry
+  authorization:
+  - name: rbac
+    json:
+      conditions:
+      - selector: context.request.http.method
+        operator: eq
+        value: DELETE
+      rules:
+      - selector: auth.identity.realm_access.roles
+        operator: incl
+        value: sr-admin
