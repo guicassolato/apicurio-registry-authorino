@@ -56,12 +56,14 @@ firefox --private-window https://apicurio-registry-unprotected.apps.dev-eng-ocp4
 ./keycloak/create-tls-cert-secret.sh
 ```
 
+Keycloak's TLS public certificate will be mounted from this ConfigMap into the chain of trusted certificates of the Authorino pod.
+
 ### 4. Install Authorino
 
-#### Install the Authorino Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20apply%20-f%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml))
+#### Install the Authorino Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$curl%20-sSl%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml%20%7C%20sed%20's/quay.io%5C/3scale%5C/authorino-operator:v0.0.1/quay.io%5C/guicassolato%5C/authorino:operator-pr20/g'%20%7C%20kubectl%20apply%20-f%20-))
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml
+curl -sSl https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml | sed 's/quay.io\/3scale\/authorino-operator:v0.0.1/quay.io\/guicassolato\/authorino:operator-pr20/g' | kubectl apply -f -
 ```
 
 #### Deploy Authorino ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20authorino.yaml))
@@ -69,15 +71,6 @@ kubectl apply -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/m
 ```sh
 kubectl -n apicurio-registry apply -f authorino.yaml
 ```
-
-#### Add Keycloak TLS certificate to Authorio trusted certificate chain ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20authorino-operator%20scale%20--replicas=0%20$(kubectl%20-n%20authorino-operator%20get%20deployments%20-l%20control-plane=controller-manager%20-o%20name)%0Akubectl%20-n%20apicurio-registry%20patch%20deployment%20authorino%20--type=strategic%20--patch%20%22$(cat%20keycloak-cert-patch.yaml)%22))
-
-```sh
-kubectl -n authorino-operator scale --replicas=0 $(kubectl -n authorino-operator get deployments -l control-plane=controller-manager -o name)
-kubectl -n apicurio-registry patch deployment authorino --type=strategic --patch "$(cat keycloak-cert-patch.yaml)"
-```
-
-The command above will scale the Authorino Operator down to zero. This will not be neeed once the operator can provide support for injecting TLS certificates in the chain of trusted certificates of the Authorino containers.
 
 #### Deploy Envoy ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20envoy.yaml))
 
@@ -103,13 +96,13 @@ Authenticate in Keycloak with any of the user credentials provided:
     Username: registry-user<br/>
     Password: changeme<br/>
 
-Using Keycloak Account Management to sign out will not work. This is because the Keycloak-issued access token remains valid. ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account))
+To sign out, close the session in Keycloak Account Management: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account))
 
 ```sh
 firefox --private-window https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account
 ```
 
-To sign out, use the Envoy-provided endpoint: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout))
+... and use the Envoy-provided endpoint that clears the authentication cookies in application: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout))
 
 ```sh
 firefox --private-window https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout
