@@ -102,7 +102,13 @@ To sign out, close the session in Keycloak Account Management: ([▶︎](didact:
 firefox --private-window https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account
 ```
 
-... and use the Envoy-provided endpoint that clears the authentication cookies in application: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout))
+...or by navigating to the logout endpoint: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/logout))
+
+```sh
+firefox --private-window https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/logout
+```
+
+...and use the Envoy-provided endpoint that clears the authentication cookies in application: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout))
 
 ```sh
 firefox --private-window https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout
