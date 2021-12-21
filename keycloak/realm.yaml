@@ -22,7 +22,7 @@ spec:
         secret: 77e84241-32a7-4c70-a4c0-0ec6ad9b7f7d
         standardFlowEnabled: true
         redirectUris:
-          - 'https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/callback*'
+          - 'https://apicurio-registry.apps.${OPENSHIFT_DOMAIN}/callback*'
         webOrigins:
           - '*'
     users:

@@ -53,7 +53,7 @@ kind: Route
 metadata:
   name: apicurio-registry-unprotected
 spec:
-  host: apicurio-registry-unprotected.apps.dev-eng-ocp4-8.dev.3sca.net
+  host: apicurio-registry-unprotected.apps.${OPENSHIFT_DOMAIN}
   path: /
   to:
     kind: Service

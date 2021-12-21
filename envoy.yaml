@@ -34,7 +34,7 @@ data:
                   - match: { prefix: /apis } # apicurio registry ui protected with authorino
                     route:
                       cluster: apicurio-registry
-                      host_rewrite_literal: apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+                      host_rewrite_literal: apicurio-registry.apps.${OPENSHIFT_DOMAIN}
                       append_x_forwarded_host: true
                   - match: { prefix: / } # apicurio registry ui not protected with authorino
                     typed_per_filter_config:
@@ -43,18 +43,18 @@ data:
                         disabled: true
                     route:
                       cluster: apicurio-registry
-                      host_rewrite_literal: apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+                      host_rewrite_literal: apicurio-registry.apps.${OPENSHIFT_DOMAIN}
                       append_x_forwarded_host: true
               http_filters:
               - name: envoy.filters.http.oauth2
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.oauth2.v3.OAuth2
                   config:
-                    authorization_endpoint: https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/auth
+                    authorization_endpoint: https://keycloak-apicurio-registry.apps.${OPENSHIFT_DOMAIN}/auth/realms/apicurio-registry/protocol/openid-connect/auth
                     redirect_uri: "https://%REQ(:authority)%/callback"
                     token_endpoint:
                       cluster: keycloak
-                      uri: https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/token
+                      uri: https://keycloak-apicurio-registry.apps.${OPENSHIFT_DOMAIN}/auth/realms/apicurio-registry/protocol/openid-connect/token
                       timeout: 3s
                     redirect_path_matcher:
                       path:
@@ -111,13 +111,13 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+                    address: keycloak-apicurio-registry.apps.${OPENSHIFT_DOMAIN}
                     port_value: 443
         transport_socket:
           name: envoy.transport_sockets.tls
           typed_config:
             "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-            sni: keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+            sni: keycloak-apicurio-registry.apps.${OPENSHIFT_DOMAIN}
       - name: external_auth
         connect_timeout: 0.25s
         type: strict_dns
@@ -260,7 +260,7 @@ kind: Route
 metadata:
   name: apicurio-registry
 spec:
-  host: apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+  host: apicurio-registry.apps.${OPENSHIFT_DOMAIN}
   to:
     kind: Service
     name: envoy
