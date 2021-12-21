@@ -161,3 +161,5 @@ Authorino will apply the same R/W permissions otherwise enforced by Apicurio Reg
 | Rules     | `DELETE` | /apis/registry/v2/admin/rules                                         | Admin      |
 | Search    | `GET`    | /apis/registry/v2/search/artifacts                                    | Read       |
 | Search    | `GET`    | /apis/registry/v2/search/artifacts/{aid}/versions                     | Read       |
+
+For the endpoints where an artifact ID is in the path, Authorino will try to match the artifact's `createdBy` property (fetched from the Apicurio Registry artifact metadata API directly endpoint) to the value of `preferred_username` claim of the JWT. In cases where Apicurio Registry returns an empty or null `createdBy`, this authorization rule will be skipped.
