@@ -124,5 +124,40 @@ kubectl -n apicurio-registry apply -f authconfig.yaml
 
 #### Try Apicurio Registry with access control
 
-- All users can read/create/update artifacts.
-- Only users with the `sr-admin` role can delete artifacts.
+Authorino will apply the same R/W permissions otherwise enforced by Apicurio Registry's built-in authorization based on the user roles:
+
+| API       | Method   | Path                                                                  | Permission |
+| --------- | -------- | --------------------------------------------------------------------- |:----------:|
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts                            | Read       |
+| Artifacts | `POST`   | /apis/registry/v2/groups/default/artifacts                            | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}                      | Read       |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}                      | Write      |
+| Artifacts | `DELETE` | /apis/registry/v2/groups/default/artifacts/{aid}                      | Write      |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/state                | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/meta                 | Read       |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/meta                 | Write      |
+| Artifacts | `POST`   | /apis/registry/v2/groups/default/artifacts/{aid}/meta                 | Read       |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/versions             | Read       |
+| Artifacts | `POST`   | /apis/registry/v2/groups/default/artifacts/{aid}/versions             | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/versions/{vid}       | Read       |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/versions/{vid}/state | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/versions/{vid}/meta  | Read       |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/versions/{vid}/meta  | Write      |
+| Artifacts | `DELETE` | /apis/registry/v2/groups/default/artifacts/{aid}/versions/{vid}/meta  | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/rules                | Read       |
+| Artifacts | `POST`   | /apis/registry/v2/groups/default/artifacts/{aid}/rules                | Write      |
+| Artifacts | `DELETE` | /apis/registry/v2/groups/default/artifacts/{aid}/rules                | Write      |
+| Artifacts | `GET`    | /apis/registry/v2/groups/default/artifacts/{aid}/rules/{rid}          | Read       |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/rules/{rid}          | Write      |
+| Artifacts | `DELETE` | /apis/registry/v2/groups/default/artifacts/{aid}/rules/{rid}          | Write      |
+| Artifacts | `PUT`    | /apis/registry/v2/groups/default/artifacts/{aid}/test                 | Read       |
+| GlobalIds | `GET`    | /apis/registry/v2/ids/{id}                                            | Read       |
+| GlobalIds | `GET`    | /apis/registry/v2/ids/{id}/meta                                       | Read       |
+| Rules     | `GET`    | /apis/registry/v2/admin/rules                                         | Admin      |
+| Rules     | `POST`   | /apis/registry/v2/admin/rules                                         | Admin      |
+| Rules     | `GET`    | /apis/registry/v2/admin/rules/{rid}                                   | Admin      |
+| Rules     | `PUT`    | /apis/registry/v2/admin/rules/{rid}                                   | Admin      |
+| Rules     | `DELETE` | /apis/registry/v2/admin/rules/{rid}                                   | Admin      |
+| Rules     | `DELETE` | /apis/registry/v2/admin/rules                                         | Admin      |
+| Search    | `GET`    | /apis/registry/v2/search/artifacts                                    | Read       |
+| Search    | `GET`    | /apis/registry/v2/search/artifacts/{aid}/versions                     | Read       |

@@ -11,12 +11,72 @@ spec:
       endpoint: https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry
   authorization:
   - name: rbac
-    json:
-      conditions:
-      - selector: context.request.http.method
-        operator: eq
-        value: DELETE
-      rules:
-      - selector: auth.identity.realm_access.roles
-        operator: incl
-        value: sr-admin
+    opa:
+      inlineRego: |
+        import input.context.request.http as req
+        import input.auth.identity.realm_access.roles
+
+        path = split(trim_left(split(req.path, "?")[0], "/"), "/")
+        method = req.method
+
+        admin { roles[_] == "sr-admin" }
+        developer { roles[_] == "sr-developer" }
+        read_only { roles[_] == "sr-readonly" }
+
+        default read_access = false
+        read_access { read_only }
+        read_access { admin }
+        read_access { developer }
+
+        default write_access = false
+        write_access { admin }
+        write_access { developer }
+
+        apis := [
+          { "name": "artifacts", "path": "/apis/registry/v2/groups/default/artifacts" },
+          { "name": "ids", "path": "/apis/registry/v2/ids" },
+          { "name": "rules", "path": "/apis/registry/v2/admin/rules" },
+          { "name": "search", "path": "/apis/registry/v2/search" }
+        ]
+
+        api[api_name] = obj {
+          api := apis[_]
+          api_name := api.name
+          active = array.slice(path, 0, count(split(api.path, "/"))-1) == split(trim_left(api.path, "/"), "/")
+          subpath = array.slice(path, count(split(api.path, "/"))-1, count(path))
+          obj := { "active": active, "subpath": subpath }
+        }
+
+        allow { api["artifacts"].active; api["artifacts"].subpath = [];                              method == "GET";    read_access  } # list artifacts
+        allow { api["artifacts"].active; api["artifacts"].subpath = [];                              method == "POST";   write_access } # create artifact
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid];                           method == "GET";    read_access  } # get latest version of artifact
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid];                           method == "PUT";    write_access } # update artifact
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid];                           method == "DELETE"; write_access } # delete artifact
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "state"];                  method == "PUT";    write_access } # update artifact state
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "meta"];                   method == "GET";    read_access  } # get artifact metadata
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "meta"];                   method == "PUT";    write_access } # update artifact metadata
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "meta"];                   method == "POST";   read_access  } # get artifact metadata by content
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions"];               method == "GET";    read_access  } # list artifact versions
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions"];               method == "POST";   write_access } # create artifact version
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions", vid];          method == "GET";    read_access  } # get artifact version
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions", vid, "state"]; method == "PUT";    write_access } # update artifact version state
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions", vid, "meta"];  method == "GET";    read_access  } # get artifact version metadata
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions", vid, "meta"];  method == "PUT";    write_access } # update artifact version metadata
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "versions", vid, "meta"];  method == "DELETE"; write_access } # delete artifact version metadata
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules"];                  method == "GET";    read_access  } # list artifact rules
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules"];                  method == "POST";   write_access } # create artifact rule
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules"];                  method == "DELETE"; write_access } # delete all artifact rules
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules", rid];             method == "GET";    read_access  } # get single artifact rule
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules", rid];             method == "PUT";    write_access } # update single artifact rule
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "rules", rid];             method == "DELETE"; write_access } # delete single artifact rule
+        allow { api["artifacts"].active; api["artifacts"].subpath = [aid, "test"];                   method == "PUT";    read_access  } # test artifact
+        allow { api["ids"].active;       api["ids"].subpath = [id];                                  method == "GET";    read_access  } # get artifact by global id
+        allow { api["ids"].active;       api["ids"].subpath = [id, "meta"];                          method == "GET";    read_access  } # get artifact metadata by global id
+        allow { api["rules"].active;     api["rules"].subpath = [];                                  method == "GET";    admin        } # list global rules
+        allow { api["rules"].active;     api["rules"].subpath = [];                                  method == "POST";   admin        } # create global rule
+        allow { api["rules"].active;     api["rules"].subpath = [rid];                               method == "GET";    admin        } # get global rule
+        allow { api["rules"].active;     api["rules"].subpath = [rid];                               method == "PUT";    admin        } # update global rule
+        allow { api["rules"].active;     api["rules"].subpath = [rid];                               method == "DELETE"; admin        } # delete global rule
+        allow { api["rules"].active;     api["rules"].subpath = [];                                  method == "DELETE"; admin        } # delete all global rules
+        allow { api["search"].active;    api["search"].subpath = ["artifacts"];                      method == "GET";    read_access  } # search artifacts
+        allow { api["search"].active;    api["search"].subpath = ["artifacts", aid, "versions"];     method == "GET";    read_access  } # search artifact versions
