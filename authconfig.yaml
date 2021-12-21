@@ -4,11 +4,11 @@ metadata:
   name: apicurio-registry-api-protection
 spec:
   hosts:
-  - apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+  - apicurio-registry.apps.${OPENSHIFT_DOMAIN}
   identity:
   - name: keycloak
     oidc:
-      endpoint: https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry
+      endpoint: https://keycloak-apicurio-registry.apps.${OPENSHIFT_DOMAIN}/auth/realms/apicurio-registry
   metadata:
   - name: artifact
     http:

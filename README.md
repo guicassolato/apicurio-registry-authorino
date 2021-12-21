@@ -10,10 +10,19 @@
 git clone git@github.com:guicassolato/apicurio-registry-authorino && cd apicurio-registry-authorino
 ```
 
-#### Set the kube context ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$oc%20login%20--token=<token>%20--server=https://api.dev-eng-ocp4-8.dev.3sca.net:6443))
+#### Set the context
+
+Set the shell variables below to the session where you will all the commands:
 
 ```sh
-oc login --token=<token> --server=https://api.dev-eng-ocp4-8.dev.3sca.net:6443
+OPENSHIFT_DOMAIN=<openshift-domain>
+OPENSHIFT_TOKEN=<token>
+```
+
+Log in to the OpenShift cluster and set the context for kubectl: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$oc%20login%20--token=$OPENSHIFT_TOKEN%20--server=https://api.$OPENSHIFT_DOMAIN:6443))
+
+```sh
+oc login --token=$OPENSHIFT_TOKEN --server=https://api.$OPENSHIFT_DOMAIN:6443
 ```
 
 #### Create the namespace ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20create%20namespace%20apicurio-registry))
@@ -30,30 +39,30 @@ kubectl create namespace apicurio-registry
 kubectl -n apicurio-registry apply -f apicurio-registry-database.yaml
 ```
 
-#### Install Apicurio Registry ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20apicurio-registry.yaml))
+#### Install Apicurio Registry ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20apicurio-registry.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
 
 ```sh
-kubectl -n apicurio-registry apply -f apicurio-registry.yaml
+sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" apicurio-registry.yaml | kubectl -n apicurio-registry apply -f -
 ```
 
-#### Try Apicurio Registry without protection ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry-unprotected.apps.dev-eng-ocp4-8.dev.3sca.net))
+#### Try Apicurio Registry without protection ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry-unprotected.apps.$OPENSHIFT_DOMAIN))
 
 ```sh
-firefox --private-window https://apicurio-registry-unprotected.apps.dev-eng-ocp4-8.dev.3sca.net
+firefox --private-window https://apicurio-registry-unprotected.apps.$OPENSHIFT_DOMAIN
 ```
 
 ### 3. Install Keycloak
 
-#### Install Keycloak ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$./keycloak/install.sh))
+#### Install Keycloak ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$OPENSHIFT_DOMAIN=$OPENSHIFT_DOMAIN%20./keycloak/install.sh))
 
 ```sh
-./keycloak/install.sh
+OPENSHIFT_DOMAIN=$OPENSHIFT_DOMAIN ./keycloak/install.sh
 ```
 
-#### Store Keycloak TLS certificate ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$./keycloak/create-tls-cert-secret.sh))
+#### Store Keycloak TLS certificate ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$OPENSHIFT_DOMAIN=$OPENSHIFT_DOMAIN%20./keycloak/create-tls-cert-secret.sh))
 
 ```sh
-./keycloak/create-tls-cert-secret.sh
+OPENSHIFT_DOMAIN=$OPENSHIFT_DOMAIN ./keycloak/create-tls-cert-secret.sh
 ```
 
 Keycloak's TLS public certificate will be mounted from this ConfigMap into the chain of trusted certificates of the Authorino pod.
@@ -72,16 +81,16 @@ curl -sSl https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/
 kubectl -n apicurio-registry apply -f authorino.yaml
 ```
 
-#### Deploy Envoy ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20envoy.yaml))
+#### Deploy Envoy ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20envoy.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
 
 ```sh
-kubectl -n apicurio-registry apply -f envoy.yaml
+sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" envoy.yaml | kubectl -n apicurio-registry apply -f -
 ```
 
-#### Try Apicurio Registry protected with Envoy and Authorino ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net))
+#### Try Apicurio Registry protected with Envoy and Authorino ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.$OPENSHIFT_DOMAIN))
 
 ```sh
-firefox --private-window https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net
+firefox --private-window https://apicurio-registry.apps.$OPENSHIFT_DOMAIN
 ```
 
 Authenticate in Keycloak with any of the user credentials provided:
@@ -96,30 +105,30 @@ Authenticate in Keycloak with any of the user credentials provided:
     Username: registry-user<br/>
     Password: changeme<br/>
 
-To sign out, close the session in Keycloak Account Management: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account))
+To sign out, close the session in Keycloak Account Management: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.$OPENSHIFT_DOMAIN/auth/realms/apicurio-registry/account))
 
 ```sh
-firefox --private-window https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/account
+firefox --private-window https://keycloak-apicurio-registry.apps.$OPENSHIFT_DOMAIN/auth/realms/apicurio-registry/account
 ```
 
-...or by navigating to the logout endpoint: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/logout))
+...or by navigating to the logout endpoint: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://keycloak-apicurio-registry.apps.$OPENSHIFT_DOMAIN/auth/realms/apicurio-registry/protocol/openid-connect/logout))
 
 ```sh
-firefox --private-window https://keycloak-apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/auth/realms/apicurio-registry/protocol/openid-connect/logout
+firefox --private-window https://keycloak-apicurio-registry.apps.$OPENSHIFT_DOMAIN/auth/realms/apicurio-registry/protocol/openid-connect/logout
 ```
 
-...and use the Envoy-provided endpoint that clears the authentication cookies in application: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout))
+...and use the Envoy-provided endpoint that clears the authentication cookies in application: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$firefox%20--private-window%20https://apicurio-registry.apps.$OPENSHIFT_DOMAIN/signout))
 
 ```sh
-firefox --private-window https://apicurio-registry.apps.dev-eng-ocp4-8.dev.3sca.net/signout
+firefox --private-window https://apicurio-registry.apps.$OPENSHIFT_DOMAIN/signout
 ```
 
 ### 5. Add the AuthConfig
 
-#### Create the `AuthConfig` ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20authconfig.yaml))
+#### Create the `AuthConfig` ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20authconfig.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
 
 ```sh
-kubectl -n apicurio-registry apply -f authconfig.yaml
+sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" authconfig.yaml | kubectl -n apicurio-registry apply -f -
 ```
 
 #### Try Apicurio Registry with access control

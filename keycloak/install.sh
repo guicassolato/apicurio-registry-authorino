@@ -18,7 +18,7 @@ while [ "$(kubectl -n $NAMESPACE get keycloak/keycloak -o jsonpath='{.status.rea
 done
 
 # keycloak realm
-kubectl -n $NAMESPACE apply -f $dir_path/realm.yaml
+sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" $dir_path/realm.yaml | kubectl -n $NAMESPACE apply -f -
 
 # admin console info
 KEYCLOAK_ADMIN_CONSOLE=$(kubectl -n $NAMESPACE get keycloak/keycloak --output="jsonpath={.status.externalURL}")
