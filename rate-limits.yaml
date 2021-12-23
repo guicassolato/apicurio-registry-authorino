@@ -1,0 +1,12 @@
+apiVersion: limitador.kuadrant.io/v1alpha1
+kind: RateLimit
+metadata:
+  name: apicurio-registry-api-ratelimit
+spec:
+  namespace: envoy
+  max_value: 1
+  seconds: 15
+  conditions:
+    - "req.path == /apis/registry/v2/groups/default/artifacts"
+    - "req.method == POST"
+  variables: []
