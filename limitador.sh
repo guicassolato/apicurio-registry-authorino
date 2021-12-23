@@ -4,7 +4,7 @@
 if [ $# == 0 ]
 then
   # make temp dir for operator files
-  mkdir tmp-limitador && cd tmp-limitador
+  mkdir -p tmp/limitador && cd tmp/limitador
 
   # clone limitador-operator repo
   git clone https://github.com/Kuadrant/limitador-operator.git .
@@ -14,12 +14,12 @@ then
 
   # deploy limitador operator
   echo "Creating limitador CRDs and deploying operator system"
-  make deploy && cd ..
+  make deploy IMG=quay.io/3scale/limitador-operator:latest && cd ../..
 fi
 
 if [ "$1" == "cleanup" ]
 then
 # remove tmp dir
-  cd tmp-limitador &&  make undeploy
-  cd ../ && rm -rf tmp-limitador
+  cd tmp/limitador && make undeploy
+  cd ../.. && rm -rf tmp/limitador
 fi

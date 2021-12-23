@@ -5,7 +5,7 @@ metadata:
 spec:
   namespace: envoy
   max_value: 1
-  seconds: 15
+  seconds: 60
   conditions:
     - "req.path == /apis/registry/v2/groups/default/artifacts"
     - "req.method == POST"
