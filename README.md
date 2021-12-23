@@ -35,12 +35,12 @@ alias firefox="$(which firefox)"
 kubectl create namespace apicurio-registry
 ```
 
-### (Optional) Watch the namespace: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=namespace$$watch%20-n%203%20%22kubectl%20get%20pods%20-n%20apicurio-registry%20%7C%20grep%20-viE%20'Completed%7COOMKilled'%22))
+### (Optional) Watch the workload: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=workload$$watch%20-n%203%20%22kubectl%20get%20pods%20--all-namespaces%20%7C%20grep%20-E%20'apicurio-registry%7Cauthorino-operator%7Climitador-operator'%20%7C%20grep%20-viE%20'Completed%7COOMKilled'%22))
 
-Watch the namespace in a separate terminal to follow the state of your workload:
+Watch the namespaces of interest in a separate terminal, to follow the state of your workload:
 
 ```sh
-watch -n 3 "kubectl get pods -n apicurio-registry | grep -viE 'Completed|OOMKilled'"
+watch -n 3 "kubectl get pods --all-namespaces | grep -E 'apicurio-registry|authorino-operator|limitador-operator' | grep -viE 'Completed|OOMKilled'"
 ```
 
 ## 2. Install Apicurio Registry
@@ -93,13 +93,12 @@ curl -sSl https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/
 kubectl -n apicurio-registry apply -f authorino.yaml
 ```
 
-
 ## 5. Install Limitador
 
-#### Install the Limitador Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./deploy-limitador.sh))
+#### Install the Limitador Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./limitador.sh))
 
 ```sh
-./deploy-limitador.sh
+./limitador.sh
 ```
 
 #### Deploy Limitador ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20apply%20-f%20limitador.yaml))
@@ -107,7 +106,7 @@ kubectl -n apicurio-registry apply -f authorino.yaml
 kubectl -n apicurio-registry apply -f limitador.yaml
 ```
 
-### 6. Deploy Envoy ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20envoy.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
+## 6. Deploy Envoy ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20envoy.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
 
 ```sh
 sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" envoy.yaml | kubectl -n apicurio-registry apply -f -
@@ -131,7 +130,7 @@ Authenticate in Keycloak with any of the user credentials provided:
     Username: registry-user [❏](didact://?commandId=vscode.didact.copyToClipboardCommand&text=registry-user)<br/>
     Password: changeme [❏](didact://?commandId=vscode.didact.copyToClipboardCommand&text=changeme)<br/>
 
-## 7. Add access control to the Apicurio Registry API
+## 7. Add access control and rate-limit to the Apicurio Registry API
 
 ### Create the `AuthConfig` ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$sed%20%22s/%5C$%7BOPENSHIFT_DOMAIN%7D/$OPENSHIFT_DOMAIN/g%22%20authconfig.yaml%20%7C%20kubectl%20-n%20apicurio-registry%20apply%20-f%20-))
 
@@ -139,15 +138,15 @@ Authenticate in Keycloak with any of the user credentials provided:
 sed "s/\${OPENSHIFT_DOMAIN}/$OPENSHIFT_DOMAIN/g" authconfig.yaml | kubectl -n apicurio-registry apply -f -
 ```
 
-## 8. Add rate control to the Apicurio Registry API
-
-### Create the `RateLimit` ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=newTerminal$$kubectl%20-n%20apicurio-registry%20apply%20-f%20rate-limits.yaml))
+### Create the `RateLimit` ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20apply%20-f%20ratelimit.yaml))
 
 ```sh
-kubectl -n apicurio-registry apply -f rate-limits.yaml
+kubectl -n apicurio-registry apply -f ratelimit.yaml
 ```
 
-### Try Apicurio Registry with access control
+### Try Apicurio Registry with access control and rate limits
+
+#### Authorization
 
 Authorino will apply the same R/W permissions otherwise enforced by Apicurio Registry's built-in authorization based on the user roles:
 
@@ -204,6 +203,10 @@ Authorino will apply the same R/W permissions otherwise enforced by Apicurio Reg
 
 For the endpoints where an artifact ID is in the path, Authorino will try to match the artifact's `createdBy` property (fetched from the Apicurio Registry artifact metadata API directly endpoint) to the value of `preferred_username` claim of the JWT. In cases where Apicurio Registry returns an empty or null `createdBy`, this authorization rule will be skipped.
 
+#### Rate-limits
+
+For this demo, only POST requests to `/apis/registry/v2/groups/default/artifacts` are rate-limited. No more than 1 artifact can be created every 60 seconds across all users.
+
 ## Signing out
 
 ### Close the session in Keycloak
@@ -238,6 +241,12 @@ Remove Apicurio Registry from the scope of Authorino: ([▶︎](didact://?comman
 kubectl -n apicurio-registry delete -f authconfig.yaml
 ```
 
+Remove the rate-limits definition: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20delete%20-f%20ratelimit.yaml))
+
+```sh
+kubectl -n apicurio-registry delete -f ratelimit.yaml
+```
+
 Decommision Envoy: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20delete%20-f%20envoy.yaml))
 
 ```sh
@@ -250,16 +259,10 @@ Decommission Authorino: ([▶︎](didact://?commandId=vscode.didact.sendNamedTer
 kubectl -n apicurio-registry delete -f authorino.yaml
 ```
 
-Decommission Limitador: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20delete%20-f%20authorino.yaml))
+Decommission Limitador: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20delete%20-f%20limitador.yaml))
 
 ```sh
 kubectl -n apicurio-registry delete -f limitador.yaml
-```
-
-Remove limits on Apicurio Registry from Limitador: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20delete%20-f%20rate-limits.yaml))
-
-```sh
-kubectl -n apicurio-registry delete -f rate-limits.yaml
 ```
 
 Uninstall Authorino Operator and the Authorino CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml))
@@ -268,10 +271,10 @@ Uninstall Authorino Operator and the Authorino CRDs: ([▶︎](didact://?command
 kubectl delete -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml
 ```
 
-Uninstall Limitador Operator and the Limitador CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml))
+Uninstall Limitador Operator and the Limitador CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./limitador.sh%20cleanup))
 
 ```sh
-./deploy-limitador.sh cleanup
+./limitador.sh cleanup
 ```
 
 Uninstall Keycloak and the Keycloak CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./keycloak/uninstall.sh))
