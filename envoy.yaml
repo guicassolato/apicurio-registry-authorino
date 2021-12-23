@@ -36,11 +36,22 @@ data:
                       cluster: apicurio-registry
                       host_rewrite_literal: apicurio-registry.apps.${OPENSHIFT_DOMAIN}
                       append_x_forwarded_host: true
+                      rate_limits:
+                        - actions:
+                          - request_headers:
+                              header_name: ":path"
+                              descriptor_key: "req.path"
+                          - request_headers:
+                              header_name: ":method"
+                              descriptor_key: "req.method"
                   - match: { prefix: / } # apicurio registry ui not protected with authorino
                     typed_per_filter_config:
                       envoy.filters.http.ext_authz:
                         "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
                         disabled: true
+                      envoy.filters.http.ratelimit:
+                        "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimitPerRoute
+                        vh_rate_limits: ignore
                     route:
                       cluster: apicurio-registry
                       host_rewrite_literal: apicurio-registry.apps.${OPENSHIFT_DOMAIN}
@@ -85,6 +96,17 @@ data:
                     envoy_grpc:
                       cluster_name: external_auth
                     timeout: 1s
+              - name: envoy.filters.http.ratelimit
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+                  domain: "envoy"
+                  failure_mode_deny: true
+                  timeout: 3s
+                  rate_limit_service:
+                    "transport_api_version": "v3"
+                    grpc_service:
+                      envoy_grpc:
+                        cluster_name: rate_limit
               - name: envoy.filters.http.router
                 typed_config: {}
               scheme_header_transformation: { scheme_to_overwrite: https }
@@ -145,6 +167,20 @@ data:
                   socket_address:
                     address: apicurio-registry
                     port_value: 8080
+      - name: rate_limit
+        connect_timeout: 1s
+        type: STRICT_DNS
+        lb_policy: round_robin
+        http2_protocol_options: {}
+        load_assignment:
+          cluster_name: apicurio-registry
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: limitador
+                    port_value: 8081
     admin:
       access_log_path: "/tmp/admin_access.log"
       address:
