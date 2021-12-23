@@ -35,12 +35,12 @@ alias firefox="$(which firefox)"
 kubectl create namespace apicurio-registry
 ```
 
-### (Optional) Watch the namespace: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=namespace$$watch%20-n%203%20%22kubectl%20get%20pods%20-n%20apicurio-registry%20%7C%20grep%20-viE%20'Completed%7COOMKilled'%22))
+### (Optional) Watch the workload: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=workload$$watch%20-n%203%20%22kubectl%20get%20pods%20--all-namespaces%20%7C%20grep%20-E%20'apicurio-registry%7Cauthorino-operator%7Climitador-operator'%20%7C%20grep%20-viE%20'Completed%7COOMKilled'%22))
 
-Watch the namespace in a separate terminal to follow the state of your workload:
+Watch the namespaces of interest in a separate terminal, to follow the state of your workload:
 
 ```sh
-watch -n 3 "kubectl get pods -n apicurio-registry | grep -viE 'Completed|OOMKilled'"
+watch -n 3 "kubectl get pods --all-namespaces | grep -E 'apicurio-registry|authorino-operator|limitador-operator' | grep -viE 'Completed|OOMKilled'"
 ```
 
 ## 2. Install Apicurio Registry
