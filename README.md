@@ -95,10 +95,10 @@ kubectl -n apicurio-registry apply -f authorino.yaml
 
 ## 5. Install Limitador
 
-#### Install the Limitador Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./limitador.sh))
+#### Install the Limitador Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20apply%20-f%20https://raw.githubusercontent.com/Kuadrant/limitador-operator/main/config/deploy/manfiests.yaml))
 
 ```sh
-./limitador.sh
+kubectl apply -f https://raw.githubusercontent.com/Kuadrant/limitador-operator/main/config/deploy/manfiests.yaml
 ```
 
 #### Deploy Limitador ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20apply%20-f%20limitador.yaml))
@@ -271,10 +271,10 @@ Uninstall Authorino Operator and the Authorino CRDs: ([▶︎](didact://?command
 kubectl delete -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml
 ```
 
-Uninstall Limitador Operator and the Limitador CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./limitador.sh%20cleanup))
+Uninstall Limitador Operator and the Limitador CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/limitador-operator/main/config/deploy/manfiests.yaml))
 
 ```sh
-./limitador.sh cleanup
+kubectl delete -f https://raw.githubusercontent.com/Kuadrant/limitador-operator/main/config/deploy/manfiests.yaml
 ```
 
 Uninstall Keycloak and the Keycloak CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$./keycloak/uninstall.sh))
