@@ -81,10 +81,10 @@ Keycloak's public TLS certificate will be mounted from a ConfigMap into the chai
 
 ## 4. Install Authorino
 
-### Install the Authorino Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$curl%20-sSl%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml%20%7C%20sed%20's/quay.io%5C/3scale%5C/authorino-operator:v0.0.1/quay.io%5C/guicassolato%5C/authorino:operator-pr20/g'%20%7C%20kubectl%20apply%20-f%20-))
+### Install the Authorino Operator ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$curl%20-sSl%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml%20%7C%20sed%20's/quay.io%5C/3scale%5C/authorino-operator:v0.0.1/quay.io%5C/3scale%5C/authorino-operator:latest/g'%20%7C%20kubectl%20apply%20-f%20-))
 
 ```sh
-curl -sSl https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml | sed 's/quay.io\/3scale\/authorino-operator:v0.0.1/quay.io\/guicassolato\/authorino:operator-pr20/g' | kubectl apply -f -
+curl -sSl https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml | sed 's/quay.io\/3scale\/authorino-operator:v0.0.1/quay.io\/3scale\/authorino-operator:latest/g' | kubectl apply -f -
 ```
 
 ### Deploy Authorino ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20-n%20apicurio-registry%20apply%20-f%20authorino.yaml))
@@ -265,10 +265,10 @@ Decommission Limitador: ([▶︎](didact://?commandId=vscode.didact.sendNamedTer
 kubectl -n apicurio-registry delete -f limitador.yaml
 ```
 
-Uninstall Authorino Operator and the Authorino CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml))
+Uninstall Authorino Operator and the Authorino CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml))
 
 ```sh
-kubectl delete -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/volumes/config/deploy/manifests.yaml
+kubectl delete -f https://raw.githubusercontent.com/Kuadrant/authorino-operator/main/config/deploy/manifests.yaml
 ```
 
 Uninstall Limitador Operator and the Limitador CRDs: ([▶︎](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=demo$$kubectl%20delete%20-f%20https://raw.githubusercontent.com/Kuadrant/limitador-operator/main/config/deploy/manfiests.yaml))
